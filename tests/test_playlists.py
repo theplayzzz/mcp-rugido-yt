@@ -4,10 +4,10 @@ from unittest.mock import MagicMock, patch
 
 
 class TestListPlaylists:
-    @patch("youtube_mcp.tools.playlists.auth")
-    @patch("youtube_mcp.tools.playlists.quota")
+    @patch("mcp_rugido_yt.tools.playlists.auth")
+    @patch("mcp_rugido_yt.tools.playlists.quota")
     def test_list_mine(self, mock_quota, mock_auth):
-        from youtube_mcp.tools.playlists import youtube_list_playlists
+        from mcp_rugido_yt.tools.playlists import youtube_list_playlists
 
         mock_yt = MagicMock()
         mock_auth.build_youtube_service.return_value = mock_yt
@@ -29,20 +29,20 @@ class TestListPlaylists:
         assert result["playlists"][0]["title"] == "My Playlist"
         assert result["playlists"][0]["video_count"] == 5
 
-    @patch("youtube_mcp.tools.playlists.auth")
-    @patch("youtube_mcp.tools.playlists.quota")
+    @patch("mcp_rugido_yt.tools.playlists.auth")
+    @patch("mcp_rugido_yt.tools.playlists.quota")
     def test_list_no_args(self, mock_quota, mock_auth):
-        from youtube_mcp.tools.playlists import youtube_list_playlists
+        from mcp_rugido_yt.tools.playlists import youtube_list_playlists
 
         result = youtube_list_playlists()
         assert "error" in result
 
 
 class TestCreatePlaylist:
-    @patch("youtube_mcp.tools.playlists.auth")
-    @patch("youtube_mcp.tools.playlists.quota")
+    @patch("mcp_rugido_yt.tools.playlists.auth")
+    @patch("mcp_rugido_yt.tools.playlists.quota")
     def test_create(self, mock_quota, mock_auth):
-        from youtube_mcp.tools.playlists import youtube_create_playlist
+        from mcp_rugido_yt.tools.playlists import youtube_create_playlist
 
         mock_yt = MagicMock()
         mock_auth.build_youtube_service.return_value = mock_yt
@@ -59,10 +59,10 @@ class TestCreatePlaylist:
 
 
 class TestAddToPlaylist:
-    @patch("youtube_mcp.tools.playlists.auth")
-    @patch("youtube_mcp.tools.playlists.quota")
+    @patch("mcp_rugido_yt.tools.playlists.auth")
+    @patch("mcp_rugido_yt.tools.playlists.quota")
     def test_add(self, mock_quota, mock_auth):
-        from youtube_mcp.tools.playlists import youtube_add_to_playlist
+        from mcp_rugido_yt.tools.playlists import youtube_add_to_playlist
 
         mock_yt = MagicMock()
         mock_auth.build_youtube_service.return_value = mock_yt
@@ -77,10 +77,10 @@ class TestAddToPlaylist:
 
 
 class TestRemoveFromPlaylist:
-    @patch("youtube_mcp.tools.playlists.auth")
-    @patch("youtube_mcp.tools.playlists.quota")
+    @patch("mcp_rugido_yt.tools.playlists.auth")
+    @patch("mcp_rugido_yt.tools.playlists.quota")
     def test_remove(self, mock_quota, mock_auth):
-        from youtube_mcp.tools.playlists import youtube_remove_from_playlist
+        from mcp_rugido_yt.tools.playlists import youtube_remove_from_playlist
 
         mock_yt = MagicMock()
         mock_auth.build_youtube_service.return_value = mock_yt

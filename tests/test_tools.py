@@ -2,8 +2,6 @@
 
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 
 def _make_mock_youtube():
     """Create a mock YouTube Data API service."""
@@ -45,10 +43,10 @@ def _make_video_resource(
 
 
 class TestGetVideo:
-    @patch("youtube_mcp.tools.channel.auth")
-    @patch("youtube_mcp.tools.channel.quota")
+    @patch("mcp_rugido_yt.tools.channel.auth")
+    @patch("mcp_rugido_yt.tools.channel.quota")
     def test_get_video_found(self, mock_quota, mock_auth):
-        from youtube_mcp.tools.channel import youtube_get_video
+        from mcp_rugido_yt.tools.channel import youtube_get_video
 
         mock_yt = _make_mock_youtube()
         mock_auth.build_youtube_service.return_value = mock_yt
@@ -63,10 +61,10 @@ class TestGetVideo:
         assert result["privacy"] == "public"
         mock_quota.consume.assert_called_once_with("list")
 
-    @patch("youtube_mcp.tools.channel.auth")
-    @patch("youtube_mcp.tools.channel.quota")
+    @patch("mcp_rugido_yt.tools.channel.auth")
+    @patch("mcp_rugido_yt.tools.channel.quota")
     def test_get_video_not_found(self, mock_quota, mock_auth):
-        from youtube_mcp.tools.channel import youtube_get_video
+        from mcp_rugido_yt.tools.channel import youtube_get_video
 
         mock_yt = _make_mock_youtube()
         mock_auth.build_youtube_service.return_value = mock_yt
@@ -77,10 +75,10 @@ class TestGetVideo:
 
 
 class TestGetChannel:
-    @patch("youtube_mcp.tools.channel.auth")
-    @patch("youtube_mcp.tools.channel.quota")
+    @patch("mcp_rugido_yt.tools.channel.auth")
+    @patch("mcp_rugido_yt.tools.channel.quota")
     def test_get_channel_by_handle(self, mock_quota, mock_auth):
-        from youtube_mcp.tools.channel import youtube_get_channel
+        from mcp_rugido_yt.tools.channel import youtube_get_channel
 
         mock_yt = _make_mock_youtube()
         mock_auth.build_youtube_service.return_value = mock_yt
@@ -110,20 +108,20 @@ class TestGetChannel:
         assert result["subscribers"] == 10000
         assert result["uploads_playlist_id"] == "UU123"
 
-    @patch("youtube_mcp.tools.channel.auth")
-    @patch("youtube_mcp.tools.channel.quota")
+    @patch("mcp_rugido_yt.tools.channel.auth")
+    @patch("mcp_rugido_yt.tools.channel.quota")
     def test_get_channel_no_args(self, mock_quota, mock_auth):
-        from youtube_mcp.tools.channel import youtube_get_channel
+        from mcp_rugido_yt.tools.channel import youtube_get_channel
 
         result = youtube_get_channel()
         assert "error" in result
 
 
 class TestSearch:
-    @patch("youtube_mcp.tools.search.auth")
-    @patch("youtube_mcp.tools.search.quota")
+    @patch("mcp_rugido_yt.tools.search.auth")
+    @patch("mcp_rugido_yt.tools.search.quota")
     def test_search_videos(self, mock_quota, mock_auth):
-        from youtube_mcp.tools.search import youtube_search
+        from mcp_rugido_yt.tools.search import youtube_search
 
         mock_yt = _make_mock_youtube()
         mock_auth.build_youtube_service.return_value = mock_yt
@@ -149,9 +147,9 @@ class TestSearch:
 
 
 class TestAnalytics:
-    @patch("youtube_mcp.tools.analytics.auth")
+    @patch("mcp_rugido_yt.tools.analytics.auth")
     def test_analytics_overview(self, mock_auth):
-        from youtube_mcp.tools.analytics import youtube_analytics_overview
+        from mcp_rugido_yt.tools.analytics import youtube_analytics_overview
 
         mock_analytics = MagicMock()
         mock_auth.build_youtube_analytics_service.return_value = mock_analytics
@@ -167,9 +165,9 @@ class TestAnalytics:
         assert result["results"][0]["views"] == 5000
         assert result["results"][0]["estimatedMinutesWatched"] == 12000
 
-    @patch("youtube_mcp.tools.analytics.auth")
+    @patch("mcp_rugido_yt.tools.analytics.auth")
     def test_analytics_top_shorts(self, mock_auth):
-        from youtube_mcp.tools.analytics import youtube_analytics_top_shorts
+        from mcp_rugido_yt.tools.analytics import youtube_analytics_top_shorts
 
         mock_analytics = MagicMock()
         mock_auth.build_youtube_analytics_service.return_value = mock_analytics

@@ -4,7 +4,7 @@ import os
 
 from googleapiclient.http import MediaFileUpload
 
-from youtube_mcp.server import auth, mcp, quota
+from mcp_rugido_yt.server import auth, mcp, quota
 
 
 @mcp.tool()
@@ -104,7 +104,6 @@ def youtube_update_video(
 
     video = items[0]
     snippet = video["snippet"]
-    status = video["status"]
 
     # Update only provided fields
     if title is not None:

@@ -1,88 +1,59 @@
-"""Tests for auth module."""
+"""Tests for auth module (Web flow multi-tenant)."""
 
-import json
-from pathlib import Path
-from unittest.mock import MagicMock, patch
+import os
+from datetime import datetime, timedelta, timezone
 
-import pytest
+os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://x")
+os.environ.setdefault("GOOGLE_CLIENT_ID", "test-client-id")
+os.environ.setdefault("GOOGLE_CLIENT_SECRET", "test-client-secret")
+os.environ.setdefault("FERNET_KEY", "8gLR8R-AIBxz_TBPxs2yPrQ5JlDxrCnbg5xT-fhpv9o=")
+os.environ.setdefault("MCP_PUBLIC_BASE_URL", "https://example.com")
 
-from youtube_mcp.auth import AuthError, YouTubeAuth
-
-
-def test_default_config_dir():
-    yt_auth = YouTubeAuth()
-    assert yt_auth.config_dir == Path.home() / ".youtube-mcp"
-    assert yt_auth.token_path == Path.home() / ".youtube-mcp" / "token.json"
-
-
-def test_custom_config_dir(tmp_path):
-    yt_auth = YouTubeAuth(config_dir=tmp_path)
-    assert yt_auth.config_dir == tmp_path
-    assert yt_auth.token_path == tmp_path / "token.json"
+from mcp_rugido_yt.auth import (  # noqa: E402
+    GOOGLE_TOKEN_URI,
+    SCOPES,
+    YouTubeAuth,
+    build_authorization_url,
+    credentials_for_session,
+)
+from mcp_rugido_yt.sessions import SessionData  # noqa: E402
 
 
-def test_client_secret_from_env(tmp_path, monkeypatch):
-    secret_path = tmp_path / "my_secret.json"
-    monkeypatch.setenv("YOUTUBE_MCP_CLIENT_SECRET", str(secret_path))
-    yt_auth = YouTubeAuth()
-    assert yt_auth.client_secret_path == secret_path
-
-
-def test_client_secret_explicit_overrides_env(tmp_path, monkeypatch):
-    monkeypatch.setenv("YOUTUBE_MCP_CLIENT_SECRET", "/env/path.json")
-    explicit = tmp_path / "explicit.json"
-    yt_auth = YouTubeAuth(client_secret_path=explicit)
-    assert yt_auth.client_secret_path == explicit
-
-
-def test_api_key_from_env(monkeypatch):
-    monkeypatch.setenv("YOUTUBE_API_KEY", "test-key-123")
-    yt_auth = YouTubeAuth()
-    assert yt_auth.api_key == "test-key-123"
-
-
-def test_api_key_explicit_overrides_env(monkeypatch):
-    monkeypatch.setenv("YOUTUBE_API_KEY", "env-key")
-    yt_auth = YouTubeAuth(api_key="explicit-key")
-    assert yt_auth.api_key == "explicit-key"
-
-
-def test_status_no_token(tmp_path):
-    yt_auth = YouTubeAuth(config_dir=tmp_path)
-    status = yt_auth.status()
-    assert status["authenticated"] is False
-    assert status["token_exists"] is False
-
-
-def test_authenticate_missing_client_secret(tmp_path):
-    yt_auth = YouTubeAuth(
-        config_dir=tmp_path,
-        client_secret_path=tmp_path / "nonexistent.json",
+def _make_session(refresh_token: str = "rt_x") -> SessionData:
+    return SessionData(
+        session_id="ymp_test",
+        channel_id="UC_test",
+        channel_handle="@test",
+        channel_title="Test Channel",
+        google_email="test@example.com",
+        refresh_token=refresh_token,
+        scope=" ".join(SCOPES),
+        quota_used=0,
+        quota_reset_at=datetime.now(timezone.utc) + timedelta(days=1),
     )
-    with pytest.raises(AuthError, match="client_secret.json not found"):
-        yt_auth.authenticate()
 
 
-def test_build_public_youtube_service_no_key(tmp_path):
-    yt_auth = YouTubeAuth(config_dir=tmp_path, api_key=None)
-    # Clear env var too
-    with patch.dict("os.environ", {}, clear=True):
-        yt_auth.api_key = None
-        with pytest.raises(AuthError, match="No API key available"):
-            yt_auth.build_public_youtube_service()
+def test_authorization_url_contains_required_params():
+    url = build_authorization_url(state="abc123")
+    assert "accounts.google.com" in url
+    assert "client_id=test-client-id" in url
+    assert "access_type=offline" in url
+    assert "prompt=consent" in url
+    assert "state=abc123" in url
+    assert "redirect_uri=https%3A%2F%2Fexample.com%2Foauth%2Fcallback" in url
 
 
-def test_load_and_save_token(tmp_path):
-    yt_auth = YouTubeAuth(config_dir=tmp_path)
+def test_credentials_for_session_uses_refresh_token():
+    session = _make_session("my_refresh_token")
+    creds = credentials_for_session(session)
+    assert creds.refresh_token == "my_refresh_token"
+    assert creds.client_id == "test-client-id"
+    assert creds.client_secret == "test-client-secret"
+    assert creds.token_uri == GOOGLE_TOKEN_URI
 
-    # Create a mock credential
-    mock_creds = MagicMock()
-    mock_creds.to_json.return_value = json.dumps({
-        "token": "test-token",
-        "refresh_token": "test-refresh",
-        "client_id": "test-client-id",
-        "client_secret": "test-client-secret",
-    })
 
-    yt_auth._save_token(mock_creds)
-    assert (tmp_path / "token.json").exists()
+def test_youtube_auth_holds_session():
+    session = _make_session()
+    yt_auth = YouTubeAuth(session)
+    assert yt_auth.session is session
+    assert yt_auth._creds.refresh_token == "rt_x"

@@ -4,10 +4,10 @@ from unittest.mock import MagicMock, patch
 
 
 class TestListComments:
-    @patch("youtube_mcp.tools.comments.auth")
-    @patch("youtube_mcp.tools.comments.quota")
+    @patch("mcp_rugido_yt.tools.comments.auth")
+    @patch("mcp_rugido_yt.tools.comments.quota")
     def test_list(self, mock_quota, mock_auth):
-        from youtube_mcp.tools.comments import youtube_list_comments
+        from mcp_rugido_yt.tools.comments import youtube_list_comments
 
         mock_yt = MagicMock()
         mock_auth.build_youtube_service.return_value = mock_yt
@@ -38,10 +38,10 @@ class TestListComments:
 
 
 class TestPostComment:
-    @patch("youtube_mcp.tools.comments.auth")
-    @patch("youtube_mcp.tools.comments.quota")
+    @patch("mcp_rugido_yt.tools.comments.auth")
+    @patch("mcp_rugido_yt.tools.comments.quota")
     def test_post(self, mock_quota, mock_auth):
-        from youtube_mcp.tools.comments import youtube_post_comment
+        from mcp_rugido_yt.tools.comments import youtube_post_comment
 
         mock_yt = MagicMock()
         mock_auth.build_youtube_service.return_value = mock_yt
@@ -62,10 +62,10 @@ class TestPostComment:
 
 
 class TestReplyToComment:
-    @patch("youtube_mcp.tools.comments.auth")
-    @patch("youtube_mcp.tools.comments.quota")
+    @patch("mcp_rugido_yt.tools.comments.auth")
+    @patch("mcp_rugido_yt.tools.comments.quota")
     def test_reply(self, mock_quota, mock_auth):
-        from youtube_mcp.tools.comments import youtube_reply_to_comment
+        from mcp_rugido_yt.tools.comments import youtube_reply_to_comment
 
         mock_yt = MagicMock()
         mock_auth.build_youtube_service.return_value = mock_yt

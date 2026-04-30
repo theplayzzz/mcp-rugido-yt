@@ -1,6 +1,6 @@
 """Comment tools — list, post, and reply to comments."""
 
-from youtube_mcp.server import auth, mcp, quota
+from mcp_rugido_yt.server import auth, mcp, quota
 
 
 @mcp.tool()

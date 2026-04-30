@@ -4,9 +4,9 @@ from unittest.mock import MagicMock, patch
 
 
 class TestListTypes:
-    @patch("youtube_mcp.tools.reporting.auth")
+    @patch("mcp_rugido_yt.tools.reporting.auth")
     def test_list_types(self, mock_auth):
-        from youtube_mcp.tools.reporting import youtube_reporting_list_types
+        from mcp_rugido_yt.tools.reporting import youtube_reporting_list_types
 
         mock_reporting = MagicMock()
         mock_auth.build_youtube_reporting_service.return_value = mock_reporting
@@ -23,9 +23,9 @@ class TestListTypes:
 
 
 class TestCreateJob:
-    @patch("youtube_mcp.tools.reporting.auth")
+    @patch("mcp_rugido_yt.tools.reporting.auth")
     def test_create(self, mock_auth):
-        from youtube_mcp.tools.reporting import youtube_reporting_create_job
+        from mcp_rugido_yt.tools.reporting import youtube_reporting_create_job
 
         mock_reporting = MagicMock()
         mock_auth.build_youtube_reporting_service.return_value = mock_reporting
@@ -42,9 +42,9 @@ class TestCreateJob:
 
 
 class TestListJobs:
-    @patch("youtube_mcp.tools.reporting.auth")
+    @patch("mcp_rugido_yt.tools.reporting.auth")
     def test_list(self, mock_auth):
-        from youtube_mcp.tools.reporting import youtube_reporting_list_jobs
+        from mcp_rugido_yt.tools.reporting import youtube_reporting_list_jobs
 
         mock_reporting = MagicMock()
         mock_auth.build_youtube_reporting_service.return_value = mock_reporting
@@ -61,9 +61,9 @@ class TestListJobs:
         assert result["total"] == 1
         assert result["jobs"][0]["job_id"] == "job123"
 
-    @patch("youtube_mcp.tools.reporting.auth")
+    @patch("mcp_rugido_yt.tools.reporting.auth")
     def test_list_empty(self, mock_auth):
-        from youtube_mcp.tools.reporting import youtube_reporting_list_jobs
+        from mcp_rugido_yt.tools.reporting import youtube_reporting_list_jobs
 
         mock_reporting = MagicMock()
         mock_auth.build_youtube_reporting_service.return_value = mock_reporting
@@ -74,9 +74,9 @@ class TestListJobs:
 
 
 class TestListReports:
-    @patch("youtube_mcp.tools.reporting.auth")
+    @patch("mcp_rugido_yt.tools.reporting.auth")
     def test_list_reports(self, mock_auth):
-        from youtube_mcp.tools.reporting import youtube_reporting_list_reports
+        from mcp_rugido_yt.tools.reporting import youtube_reporting_list_reports
 
         mock_reporting = MagicMock()
         mock_auth.build_youtube_reporting_service.return_value = mock_reporting
@@ -96,10 +96,10 @@ class TestListReports:
 
 
 class TestDownload:
-    @patch("youtube_mcp.tools.reporting.auth")
-    @patch("youtube_mcp.tools.reporting.urllib.request.urlopen")
+    @patch("mcp_rugido_yt.tools.reporting.auth")
+    @patch("mcp_rugido_yt.tools.reporting.urllib.request.urlopen")
     def test_download(self, mock_urlopen, mock_auth):
-        from youtube_mcp.tools.reporting import youtube_reporting_download
+        from mcp_rugido_yt.tools.reporting import youtube_reporting_download
 
         mock_creds = MagicMock()
         mock_creds.token = "test-token"
@@ -115,10 +115,10 @@ class TestDownload:
         assert result["truncated"] is False
         assert "date,views,watch_time" in result["content"]
 
-    @patch("youtube_mcp.tools.reporting.auth")
-    @patch("youtube_mcp.tools.reporting.urllib.request.urlopen", side_effect=Exception("timeout"))
+    @patch("mcp_rugido_yt.tools.reporting.auth")
+    @patch("mcp_rugido_yt.tools.reporting.urllib.request.urlopen", side_effect=Exception("timeout"))
     def test_download_error(self, mock_urlopen, mock_auth):
-        from youtube_mcp.tools.reporting import youtube_reporting_download
+        from mcp_rugido_yt.tools.reporting import youtube_reporting_download
 
         mock_creds = MagicMock()
         mock_creds.token = "test-token"

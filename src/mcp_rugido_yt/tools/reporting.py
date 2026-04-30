@@ -7,7 +7,7 @@ Reports are generated daily and available for 60 days.
 
 import urllib.request
 
-from youtube_mcp.server import auth, mcp
+from mcp_rugido_yt.server import auth, mcp
 
 
 @mcp.tool()

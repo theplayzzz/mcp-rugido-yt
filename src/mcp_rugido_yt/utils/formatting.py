@@ -1,6 +1,5 @@
 """Response formatting utilities for LLM consumption."""
 
-from datetime import timedelta
 
 
 def format_duration(iso_duration: str) -> str:

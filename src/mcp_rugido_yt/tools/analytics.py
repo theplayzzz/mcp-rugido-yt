@@ -6,7 +6,7 @@ traffic sources, and more via the YouTube Analytics API.
 
 from datetime import date, timedelta
 
-from youtube_mcp.server import auth, mcp
+from mcp_rugido_yt.server import auth, mcp
 
 
 def _default_date_range(days: int = 28) -> tuple[str, str]:

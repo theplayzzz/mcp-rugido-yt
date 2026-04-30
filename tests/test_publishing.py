@@ -2,16 +2,14 @@
 
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 
 class TestUploadVideo:
-    @patch("youtube_mcp.tools.publishing.MediaFileUpload")
-    @patch("youtube_mcp.tools.publishing.auth")
-    @patch("youtube_mcp.tools.publishing.quota")
+    @patch("mcp_rugido_yt.tools.publishing.MediaFileUpload")
+    @patch("mcp_rugido_yt.tools.publishing.auth")
+    @patch("mcp_rugido_yt.tools.publishing.quota")
     @patch("os.path.exists", return_value=True)
     def test_upload_success(self, mock_exists, mock_quota, mock_auth, mock_media):
-        from youtube_mcp.tools.publishing import youtube_upload_video
+        from mcp_rugido_yt.tools.publishing import youtube_upload_video
 
         mock_yt = MagicMock()
         mock_auth.build_youtube_service.return_value = mock_yt
@@ -31,9 +29,9 @@ class TestUploadVideo:
         assert result["quota_cost"] == 1600
         mock_quota.consume.assert_called_once_with("video_insert")
 
-    @patch("youtube_mcp.tools.publishing.quota")
+    @patch("mcp_rugido_yt.tools.publishing.quota")
     def test_upload_file_not_found(self, mock_quota):
-        from youtube_mcp.tools.publishing import youtube_upload_video
+        from mcp_rugido_yt.tools.publishing import youtube_upload_video
 
         result = youtube_upload_video(
             file_path="/nonexistent/video.mp4",
@@ -44,10 +42,10 @@ class TestUploadVideo:
 
 
 class TestUpdateVideo:
-    @patch("youtube_mcp.tools.publishing.auth")
-    @patch("youtube_mcp.tools.publishing.quota")
+    @patch("mcp_rugido_yt.tools.publishing.auth")
+    @patch("mcp_rugido_yt.tools.publishing.quota")
     def test_update_title(self, mock_quota, mock_auth):
-        from youtube_mcp.tools.publishing import youtube_update_video
+        from mcp_rugido_yt.tools.publishing import youtube_update_video
 
         mock_yt = MagicMock()
         mock_auth.build_youtube_service.return_value = mock_yt
@@ -77,10 +75,10 @@ class TestUpdateVideo:
         assert result["title"] == "New Title"
         assert result["updated"] is True
 
-    @patch("youtube_mcp.tools.publishing.auth")
-    @patch("youtube_mcp.tools.publishing.quota")
+    @patch("mcp_rugido_yt.tools.publishing.auth")
+    @patch("mcp_rugido_yt.tools.publishing.quota")
     def test_update_not_found(self, mock_quota, mock_auth):
-        from youtube_mcp.tools.publishing import youtube_update_video
+        from mcp_rugido_yt.tools.publishing import youtube_update_video
 
         mock_yt = MagicMock()
         mock_auth.build_youtube_service.return_value = mock_yt
@@ -91,12 +89,12 @@ class TestUpdateVideo:
 
 
 class TestSetThumbnail:
-    @patch("youtube_mcp.tools.publishing.MediaFileUpload")
-    @patch("youtube_mcp.tools.publishing.auth")
-    @patch("youtube_mcp.tools.publishing.quota")
+    @patch("mcp_rugido_yt.tools.publishing.MediaFileUpload")
+    @patch("mcp_rugido_yt.tools.publishing.auth")
+    @patch("mcp_rugido_yt.tools.publishing.quota")
     @patch("os.path.exists", return_value=True)
     def test_set_thumbnail(self, mock_exists, mock_quota, mock_auth, mock_media):
-        from youtube_mcp.tools.publishing import youtube_set_thumbnail
+        from mcp_rugido_yt.tools.publishing import youtube_set_thumbnail
 
         mock_yt = MagicMock()
         mock_auth.build_youtube_service.return_value = mock_yt
@@ -110,10 +108,10 @@ class TestSetThumbnail:
 
 
 class TestDeleteVideo:
-    @patch("youtube_mcp.tools.publishing.auth")
-    @patch("youtube_mcp.tools.publishing.quota")
+    @patch("mcp_rugido_yt.tools.publishing.auth")
+    @patch("mcp_rugido_yt.tools.publishing.quota")
     def test_delete(self, mock_quota, mock_auth):
-        from youtube_mcp.tools.publishing import youtube_delete_video
+        from mcp_rugido_yt.tools.publishing import youtube_delete_video
 
         mock_yt = MagicMock()
         mock_auth.build_youtube_service.return_value = mock_yt

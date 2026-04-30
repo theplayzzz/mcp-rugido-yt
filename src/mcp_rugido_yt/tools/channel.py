@@ -1,7 +1,7 @@
 """Channel and video read tools."""
 
-from youtube_mcp.server import auth, mcp, quota
-from youtube_mcp.utils.formatting import format_video_summary
+from mcp_rugido_yt.server import auth, mcp, quota
+from mcp_rugido_yt.utils.formatting import format_video_summary
 
 
 @mcp.tool()

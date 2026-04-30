@@ -4,9 +4,9 @@ from unittest.mock import MagicMock, patch
 
 
 class TestSearchSuggestions:
-    @patch("youtube_mcp.tools.search.urllib.request.urlopen")
+    @patch("mcp_rugido_yt.tools.search.urllib.request.urlopen")
     def test_suggestions(self, mock_urlopen):
-        from youtube_mcp.tools.search import youtube_search_suggestions
+        from mcp_rugido_yt.tools.search import youtube_search_suggestions
 
         mock_resp = MagicMock()
         mock_resp.read.return_value = b'window.google.ac.h([["test"],[["test query",0],["test video",0]],{}])'
@@ -18,18 +18,18 @@ class TestSearchSuggestions:
         assert "test video" in result["suggestions"]
 
     def test_suggestions_error(self):
-        from youtube_mcp.tools.search import youtube_search_suggestions
+        from mcp_rugido_yt.tools.search import youtube_search_suggestions
 
-        with patch("youtube_mcp.tools.search.urllib.request.urlopen", side_effect=Exception("timeout")):
+        with patch("mcp_rugido_yt.tools.search.urllib.request.urlopen", side_effect=Exception("timeout")):
             result = youtube_search_suggestions("test")
             assert "error" in result
 
 
 class TestTrending:
-    @patch("youtube_mcp.tools.search.auth")
-    @patch("youtube_mcp.tools.search.quota")
+    @patch("mcp_rugido_yt.tools.search.auth")
+    @patch("mcp_rugido_yt.tools.search.quota")
     def test_trending(self, mock_quota, mock_auth):
-        from youtube_mcp.tools.search import youtube_trending
+        from mcp_rugido_yt.tools.search import youtube_trending
 
         mock_yt = MagicMock()
         mock_auth.build_youtube_service.return_value = mock_yt
@@ -54,10 +54,10 @@ class TestTrending:
         assert result["videos"][0]["views"] == 1000000
         mock_quota.consume.assert_called_once_with("list")
 
-    @patch("youtube_mcp.tools.search.auth")
-    @patch("youtube_mcp.tools.search.quota")
+    @patch("mcp_rugido_yt.tools.search.auth")
+    @patch("mcp_rugido_yt.tools.search.quota")
     def test_trending_with_category(self, mock_quota, mock_auth):
-        from youtube_mcp.tools.search import youtube_trending
+        from mcp_rugido_yt.tools.search import youtube_trending
 
         mock_yt = MagicMock()
         mock_auth.build_youtube_service.return_value = mock_yt
@@ -68,10 +68,10 @@ class TestTrending:
 
 
 class TestGetCategories:
-    @patch("youtube_mcp.tools.search.auth")
-    @patch("youtube_mcp.tools.search.quota")
+    @patch("mcp_rugido_yt.tools.search.auth")
+    @patch("mcp_rugido_yt.tools.search.quota")
     def test_categories(self, mock_quota, mock_auth):
-        from youtube_mcp.tools.search import youtube_get_categories
+        from mcp_rugido_yt.tools.search import youtube_get_categories
 
         mock_yt = MagicMock()
         mock_auth.build_youtube_service.return_value = mock_yt

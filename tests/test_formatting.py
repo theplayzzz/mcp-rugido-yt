@@ -1,6 +1,6 @@
 """Tests for formatting utilities."""
 
-from youtube_mcp.utils.formatting import (
+from mcp_rugido_yt.utils.formatting import (
     _is_likely_short,
     format_count,
     format_duration,
