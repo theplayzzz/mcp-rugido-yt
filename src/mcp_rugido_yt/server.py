@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 
 mcp = FastMCP(
     "MCP Rugido YT",
+    streamable_http_path="/",  # serve na raiz do app interno; o mount externo é /mcp
     instructions="MCP multi-tenant pra YouTube Data API, Analytics API e Reporting API.",
 )
 
@@ -168,7 +169,7 @@ def _success_page(
     channel_handle: str | None,
 ) -> HTMLResponse:
     public_url = get_settings().public_base_url.rstrip("/")
-    mcp_url = f"{public_url}/mcp"
+    mcp_url = f"{public_url}/mcp/"
     handle_html = (
         f' (<code>{escape(channel_handle)}</code>)' if channel_handle else ""
     )
@@ -374,6 +375,8 @@ def main():
         port=settings.port,
         factory=True,
         log_level="info",
+        proxy_headers=True,
+        forwarded_allow_ips="*",
     )
 
 
