@@ -12,8 +12,10 @@ import secrets
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from html import escape
+from urllib.parse import urlparse
 
 from mcp.server.fastmcp import FastMCP
+from mcp.server.transport_security import TransportSecuritySettings
 from sqlalchemy import update
 from starlette.applications import Starlette
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -30,9 +32,17 @@ from mcp_rugido_yt.utils.quota import RequestQuota, quota, set_current_quota
 
 logger = logging.getLogger(__name__)
 
+_public_host = urlparse(get_settings().public_base_url).netloc
+
 mcp = FastMCP(
     "MCP Rugido YT",
     instructions="MCP multi-tenant pra YouTube Data API, Analytics API e Reporting API.",
+    transport_security=TransportSecuritySettings(
+        # Sem isso o MCP SDK retorna 421 "Invalid Host header" pra qualquer
+        # request fora de localhost (proteção contra DNS rebinding).
+        allowed_hosts=[_public_host, "127.0.0.1:*", "localhost:*"],
+        allowed_origins=[get_settings().public_base_url.rstrip("/")],
+    ),
 )
 
 OAUTH_STATE_COOKIE = "mcp_rugido_oauth_state"
