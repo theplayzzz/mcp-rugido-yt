@@ -1,4 +1,9 @@
-"""Playlist management tools."""
+"""Playlist tools — read-only.
+
+Tools de escrita (create_playlist, add_to_playlist, remove_from_playlist) foram
+removidas: dependiam do escopo restricted `youtube` que exige Verificação
+Google. Ver auth.py:SCOPES.
+"""
 
 from mcp_rugido_yt.server import auth, mcp, quota
 
@@ -42,91 +47,3 @@ def youtube_list_playlists(
         })
 
     return {"playlists": playlists, "total": len(playlists)}
-
-
-@mcp.tool()
-def youtube_create_playlist(
-    title: str,
-    description: str = "",
-    privacy_status: str = "private",
-) -> dict:
-    """Create a new playlist.
-
-    Args:
-        title: Playlist title
-        description: Playlist description
-        privacy_status: "private", "public", or "unlisted"
-    """
-    quota.consume("insert")
-    youtube = auth.build_youtube_service()
-
-    body = {
-        "snippet": {
-            "title": title,
-            "description": description,
-        },
-        "status": {
-            "privacyStatus": privacy_status,
-        },
-    }
-
-    response = youtube.playlists().insert(part="snippet,status", body=body).execute()
-
-    return {
-        "id": response["id"],
-        "title": response["snippet"]["title"],
-        "privacy": response["status"]["privacyStatus"],
-        "url": f"https://www.youtube.com/playlist?list={response['id']}",
-    }
-
-
-@mcp.tool()
-def youtube_add_to_playlist(playlist_id: str, video_id: str, position: int | None = None) -> dict:
-    """Add a video to a playlist.
-
-    Args:
-        playlist_id: Playlist ID to add the video to
-        video_id: Video ID to add
-        position: Position in the playlist (0-based). Defaults to end.
-    """
-    quota.consume("insert")
-    youtube = auth.build_youtube_service()
-
-    body = {
-        "snippet": {
-            "playlistId": playlist_id,
-            "resourceId": {
-                "kind": "youtube#video",
-                "videoId": video_id,
-            },
-        },
-    }
-    if position is not None:
-        body["snippet"]["position"] = position
-
-    response = youtube.playlistItems().insert(part="snippet", body=body).execute()
-
-    return {
-        "playlist_item_id": response["id"],
-        "playlist_id": playlist_id,
-        "video_id": video_id,
-        "position": response["snippet"].get("position"),
-        "added": True,
-    }
-
-
-@mcp.tool()
-def youtube_remove_from_playlist(playlist_item_id: str) -> dict:
-    """Remove a video from a playlist.
-
-    Use youtube_list_playlists or the Data API to find the playlist_item_id.
-
-    Args:
-        playlist_item_id: The playlist item ID (not the video ID)
-    """
-    quota.consume("delete")
-    youtube = auth.build_youtube_service()
-
-    youtube.playlistItems().delete(id=playlist_item_id).execute()
-
-    return {"playlist_item_id": playlist_item_id, "removed": True}

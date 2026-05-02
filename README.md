@@ -2,13 +2,9 @@
 
 MCP server multi-tenant para YouTube Data API v3, Analytics API e Reporting API. Cada usuário se conecta com seu próprio canal via OAuth Google e recebe um `session_id` (`ymp_xxx`) que cola no Authorization header do cliente MCP.
 
-Cobre **read + analytics**: dados de canal/vídeo, todas as métricas Analytics (performance, audiência, retenção, receita, demographics, geography), search/SEO, transcripts, listagem de playlists e comentários, bulk reporting.
+**30 tools** focadas em **read + analytics**: dados de canal/vídeo, todas as métricas Analytics (performance, audiência, retenção, receita, demographics, geography), search/SEO, transcripts, listagem de playlists e comentários, bulk reporting.
 
-> **Escopos write (upload de vídeo, post comment, criar playlist) estão desabilitados**
-> porque Google exige Verificação + Security Assessment (~US$ 4-15k) pra
-> escopos restricted. As tools dessa categoria existem no código mas retornam
-> 403 quando chamadas. Pra habilitar, passe o app pela Verificação Google e
-> reinclua `youtube` e `youtube.upload` em `src/mcp_rugido_yt/auth.py:SCOPES`.
+Tools de write (upload, post_comment, create_playlist, etc) foram removidas: dependem de escopos `restricted` que exigem Verificação Google + Security Assessment.
 
 ## Modelo de uso
 
@@ -56,44 +52,52 @@ uv venv && uv pip install -e ".[dev]"
 .venv/bin/pytest
 ```
 
-## Tools disponíveis
+## Tools expostas (30 tools — read + analytics)
 
-### Auth/Status
+### Auth/Status (1)
 - `youtube_auth_status` — canal vinculado, escopos, quota usada
 
-### Channel & Video
+### Channel & Video (3)
 - `youtube_get_channel`, `youtube_list_videos`, `youtube_get_video`
 
-### Search & SEO
+### Search & SEO (4)
 - `youtube_search`, `youtube_search_suggestions`, `youtube_trending`, `youtube_get_categories`
 
-### Transcripts
+### Transcripts (2)
 - `youtube_get_transcript`, `youtube_list_captions`
 
-### Analytics
+### Analytics (13)
 - `youtube_analytics_overview`, `youtube_analytics_top_videos`, `youtube_analytics_top_shorts`, `youtube_analytics_video_detail`
 - `youtube_analytics_traffic_sources`, `youtube_analytics_demographics`, `youtube_analytics_geography`
 - `youtube_analytics_daily`, `youtube_analytics_day_of_week`, `youtube_analytics_content_type_breakdown`
 - `youtube_analytics_revenue`, `youtube_analytics_revenue_by_video`, `youtube_analytics_retention`
 
-### Publishing
-- `youtube_upload_video`, `youtube_update_video`, `youtube_set_thumbnail`, `youtube_delete_video`
+### Playlists (1)
+- `youtube_list_playlists`
 
-### Playlists
-- `youtube_list_playlists`, `youtube_create_playlist`, `youtube_add_to_playlist`, `youtube_remove_from_playlist`
+### Comments (1)
+- `youtube_list_comments`
 
-### Comments
-- `youtube_list_comments`, `youtube_post_comment`, `youtube_reply_to_comment`
-
-### Bulk Reporting
+### Bulk Reporting (5)
 - `youtube_reporting_list_types`, `youtube_reporting_create_job`, `youtube_reporting_list_jobs`, `youtube_reporting_list_reports`, `youtube_reporting_download`
+
+### Tools removidas (precisam de escopos restricted + Verificação Google)
+
+Estas existiam no upstream mas foram desabilitadas para o app rodar em
+Production sem Verificação. Pra reativar: passar pela Verificação Google
+(Privacy Policy + demo video; pra `youtube.upload`/`youtube.force-ssl`
+também Security Assessment de US$ 4-15k), e re-adicionar `youtube` e
+`youtube.upload` em `auth.py:SCOPES`.
+
+- Publishing: `youtube_upload_video`, `youtube_update_video`, `youtube_set_thumbnail`, `youtube_delete_video`
+- Comments write: `youtube_post_comment`, `youtube_reply_to_comment`
+- Playlists write: `youtube_create_playlist`, `youtube_add_to_playlist`, `youtube_remove_from_playlist`
 
 ## Quota
 
-A YouTube Data API tem 10.000 units/dia por projeto. **Esse limite é compartilhado entre todos os usuários** do mesmo OAuth client. Cada sessão tem seu próprio contador interno (campo `quota_used` no DB) que pode ser ajustado via `DAILY_QUOTA_LIMIT`. Operação custosas:
+A YouTube Data API tem 10.000 units/dia por projeto. **Esse limite é compartilhado entre todos os usuários** do mesmo OAuth client. Cada sessão tem seu próprio contador interno (campo `quota_used` no DB) que pode ser ajustado via `DAILY_QUOTA_LIMIT`. Operações custosas:
 
 - Search: 100 units
-- Upload: 1600 units
 - Demais reads: 1 unit
 
 ## Origem

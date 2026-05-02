@@ -1,4 +1,9 @@
-"""Comment tools — list, post, and reply to comments."""
+"""Comment tools — read-only.
+
+Tools de escrita (post_comment, reply_to_comment) foram removidas: dependiam
+do escopo restricted `youtube`/`youtube.force-ssl` que exige Verificação
+Google. Ver auth.py:SCOPES.
+"""
 
 from mcp_rugido_yt.server import auth, mcp, quota
 
@@ -47,66 +52,4 @@ def youtube_list_comments(
         "video_id": video_id,
         "comments": comments,
         "total": len(comments),
-    }
-
-
-@mcp.tool()
-def youtube_post_comment(video_id: str, text: str) -> dict:
-    """Post a new top-level comment on a video.
-
-    Args:
-        video_id: YouTube video ID to comment on
-        text: Comment text
-    """
-    quota.consume("insert")
-    youtube = auth.build_youtube_service()
-
-    body = {
-        "snippet": {
-            "videoId": video_id,
-            "topLevelComment": {
-                "snippet": {
-                    "textOriginal": text,
-                },
-            },
-        },
-    }
-
-    response = youtube.commentThreads().insert(part="snippet", body=body).execute()
-
-    top = response["snippet"]["topLevelComment"]["snippet"]
-    return {
-        "comment_id": response["snippet"]["topLevelComment"]["id"],
-        "thread_id": response["id"],
-        "text": top.get("textDisplay"),
-        "video_id": video_id,
-        "posted": True,
-    }
-
-
-@mcp.tool()
-def youtube_reply_to_comment(parent_id: str, text: str) -> dict:
-    """Reply to an existing comment.
-
-    Args:
-        parent_id: The comment ID to reply to (from youtube_list_comments)
-        text: Reply text
-    """
-    quota.consume("insert")
-    youtube = auth.build_youtube_service()
-
-    body = {
-        "snippet": {
-            "parentId": parent_id,
-            "textOriginal": text,
-        },
-    }
-
-    response = youtube.comments().insert(part="snippet", body=body).execute()
-
-    return {
-        "reply_id": response["id"],
-        "parent_id": parent_id,
-        "text": response["snippet"].get("textDisplay"),
-        "posted": True,
     }

@@ -68,7 +68,6 @@ from mcp_rugido_yt.tools import (
     channel,  # noqa: E402, F401
     comments,  # noqa: E402, F401
     playlists,  # noqa: E402, F401
-    publishing,  # noqa: E402, F401
     reporting,  # noqa: E402, F401
     search,  # noqa: E402, F401
     transcripts,  # noqa: E402, F401
