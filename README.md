@@ -2,7 +2,13 @@
 
 MCP server multi-tenant para YouTube Data API v3, Analytics API e Reporting API. Cada usuário se conecta com seu próprio canal via OAuth Google e recebe um `session_id` (`ymp_xxx`) que cola no Authorization header do cliente MCP.
 
-40 tools cobrindo: dados de canal/vídeo, Analytics (performance, audiência, retenção, receita), publicação, playlists, comentários, transcripts, SEO, bulk reporting.
+Cobre **read + analytics**: dados de canal/vídeo, todas as métricas Analytics (performance, audiência, retenção, receita, demographics, geography), search/SEO, transcripts, listagem de playlists e comentários, bulk reporting.
+
+> **Escopos write (upload de vídeo, post comment, criar playlist) estão desabilitados**
+> porque Google exige Verificação + Security Assessment (~US$ 4-15k) pra
+> escopos restricted. As tools dessa categoria existem no código mas retornam
+> 403 quando chamadas. Pra habilitar, passe o app pela Verificação Google e
+> reinclua `youtube` e `youtube.upload` em `src/mcp_rugido_yt/auth.py:SCOPES`.
 
 ## Modelo de uso
 

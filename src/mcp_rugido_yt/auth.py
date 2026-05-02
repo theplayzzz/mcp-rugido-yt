@@ -18,14 +18,26 @@ from mcp_rugido_yt.config import get_settings
 from mcp_rugido_yt.sessions import SessionData
 
 SCOPES = [
+    # Read-only do canal (sensitive). Cobre listing de vídeos, channel info,
+    # playlists (read), comentários (read), captions/transcripts.
     "https://www.googleapis.com/auth/youtube.readonly",
-    "https://www.googleapis.com/auth/youtube",
-    "https://www.googleapis.com/auth/youtube.upload",
+    # Analytics — métricas de performance, audience, retention, traffic sources.
     "https://www.googleapis.com/auth/yt-analytics.readonly",
+    # Analytics monetary — revenue por video, ad performance.
     "https://www.googleapis.com/auth/yt-analytics-monetary.readonly",
+    # Identidade do usuário pra resolver o canal e gravar email na sessão.
     "openid",
     "https://www.googleapis.com/auth/userinfo.email",
 ]
+# NOTA: escopos `youtube` (write) e `youtube.upload` foram removidos porque são
+# "restricted" — bloqueiam o consent quando o app não passou pela Verificação
+# Google + Security Assessment (US$ 4-15k). Ferramentas que dependiam deles:
+#   - publishing.py    (upload_video, update_video, set_thumbnail, delete_video)
+#   - comments.py      (post_comment, reply_to_comment) — leitura segue ok
+#   - playlists.py     (create, add, remove) — listagem segue ok
+# Essas tools continuam no código mas vão retornar 403 quando chamadas. Pra
+# habilitar: passar pela Verificação Google (semanas/meses) e re-incluir os
+# escopos aqui.
 
 GOOGLE_TOKEN_URI = "https://oauth2.googleapis.com/token"
 
