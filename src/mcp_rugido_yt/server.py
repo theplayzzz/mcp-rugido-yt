@@ -166,33 +166,100 @@ def _success_page(
     channel_handle: str | None,
 ) -> HTMLResponse:
     public_url = get_settings().public_base_url.rstrip("/")
-    handle_html = f"(<code>{escape(channel_handle)}</code>)" if channel_handle else ""
-    config_json = (
+    mcp_url = f"{public_url}/mcp"
+    handle_html = (
+        f' (<code>{escape(channel_handle)}</code>)' if channel_handle else ""
+    )
+
+    cli_command = (
+        f"claude mcp add --transport http rugido-yt \\\n"
+        f"  {mcp_url} \\\n"
+        f'  --header "Authorization: Bearer {session_id}"'
+    )
+
+    desktop_json = (
         "{\n"
         '  "mcpServers": {\n'
         '    "rugido-yt": {\n'
-        f'      "url": "{escape(public_url)}/mcp",\n'
-        f'      "headers": {{ "Authorization": "Bearer {escape(session_id)}" }}\n'
+        f'      "url": "{mcp_url}",\n'
+        f'      "headers": {{ "Authorization": "Bearer {session_id}" }}\n'
         "    }\n"
         "  }\n"
         "}"
     )
+
+    handoff_prompt = (
+        "Adicione o MCP \"rugido-yt\" no meu Claude Code rodando este comando "
+        "exatamente como está:\n\n"
+        f"{cli_command}\n\n"
+        "Depois rode `claude mcp list` pra confirmar que apareceu como "
+        "Connected, e me mostre as ferramentas que ficaram disponíveis."
+    )
+
     body = f"""<!doctype html>
 <html lang="pt-BR"><head>
 <meta charset="utf-8"><title>Conectado — MCP Rugido YT</title>
 <style>
-  body{{font-family:system-ui,-apple-system,sans-serif;max-width:680px;margin:40px auto;padding:0 16px;line-height:1.5}}
-  code{{background:#eee;padding:2px 6px;border-radius:4px;word-break:break-all}}
-  pre{{background:#1e1e1e;color:#eaeaea;padding:16px;border-radius:8px;overflow:auto;font-size:13px}}
+  :root {{ color-scheme: light dark; }}
+  body{{font-family:system-ui,-apple-system,sans-serif;max-width:760px;margin:40px auto;padding:0 16px;line-height:1.55;color:#222}}
+  h1{{margin:0 0 4px}}
+  h2{{margin-top:32px;font-size:18px;border-bottom:1px solid #ddd;padding-bottom:6px}}
+  code{{background:#eef;padding:2px 6px;border-radius:4px;word-break:break-all;font-size:13px}}
+  pre{{background:#1e1e1e;color:#eaeaea;padding:14px 16px;border-radius:8px;overflow:auto;font-size:13px;line-height:1.45;position:relative}}
+  pre button{{position:absolute;top:8px;right:8px;background:#444;color:#eee;border:0;border-radius:4px;padding:4px 10px;font-size:12px;cursor:pointer}}
+  pre button:hover{{background:#666}}
+  pre button.copied{{background:#0a7d2c}}
   .ok{{color:#0a7d2c}}
+  .meta{{color:#555;font-size:14px;margin:0 0 4px}}
+  .warn{{background:#fff8e1;border-left:4px solid #f0b400;padding:10px 14px;margin:16px 0;border-radius:4px;font-size:14px}}
+  details{{margin-top:8px}}
+  summary{{cursor:pointer;color:#0366d6;font-size:14px}}
 </style></head><body>
-  <h1 class="ok">Conectado</h1>
-  <p>Conta <code>{escape(google_email)}</code> — canal <strong>{escape(channel_title or "?")}</strong> {handle_html}</p>
-  <h3>1. Copie o session_id abaixo</h3>
-  <pre>{escape(session_id)}</pre>
-  <h3>2. Cole no seu cliente MCP</h3>
-  <pre>{escape(config_json)}</pre>
-  <p><strong>Guarde esse session_id</strong> — não conseguimos mostrar de novo. Se perder, refaça o consent.</p>
+  <h1 class="ok">✓ Conectado</h1>
+  <p class="meta">Conta <code>{escape(google_email)}</code></p>
+  <p class="meta">Canal <strong>{escape(channel_title or "?")}</strong>{handle_html}</p>
+
+  <h2>Seu session_id</h2>
+  <pre id="sid"><button data-target="sid">copiar</button>{escape(session_id)}</pre>
+  <div class="warn">Guarde em local seguro. <strong>Não conseguimos mostrar de novo.</strong> Se perder, é só voltar em <code>/oauth/connect</code> e refazer.</div>
+
+  <h2>Instalar no Claude Code (recomendado)</h2>
+  <p>Cole este comando num terminal onde o <code>claude</code> CLI esteja instalado:</p>
+  <pre id="cli"><button data-target="cli">copiar</button>{escape(cli_command)}</pre>
+  <p>Reinicie o Claude Code. As 40 ferramentas <code>youtube_*</code> aparecem automaticamente.</p>
+
+  <details>
+    <summary>Prompt pronto pra mandar pro próprio Claude Code instalar</summary>
+    <p>Cole isso na conversa do Claude Code que ele resolve a instalação sozinho:</p>
+    <pre id="handoff"><button data-target="handoff">copiar</button>{escape(handoff_prompt)}</pre>
+  </details>
+
+  <h2>Alternativa — Claude Desktop / arquivo .mcp.json</h2>
+  <p>Adicione ao <code>claude_desktop_config.json</code> ou a um <code>.mcp.json</code> na raiz do projeto:</p>
+  <pre id="json"><button data-target="json">copiar</button>{escape(desktop_json)}</pre>
+
+  <h2>Próximo passo</h2>
+  <p>Dentro do Claude Code, peça algo como <em>"liste meus 5 vídeos mais recentes do YouTube"</em> — ele chama <code>youtube_list_videos</code> com seu token e devolve os dados do canal acima.</p>
+
+  <script>
+    document.querySelectorAll('pre button').forEach(btn => {{
+      btn.addEventListener('click', async () => {{
+        const target = document.getElementById(btn.dataset.target);
+        const text = target.innerText.replace(/^copiar\\n?/, '').trim();
+        try {{
+          await navigator.clipboard.writeText(text);
+          btn.textContent = 'copiado ✓';
+          btn.classList.add('copied');
+          setTimeout(() => {{
+            btn.textContent = 'copiar';
+            btn.classList.remove('copied');
+          }}, 2000);
+        }} catch (e) {{
+          btn.textContent = 'falhou';
+        }}
+      }});
+    }});
+  </script>
 </body></html>"""
     return HTMLResponse(body)
 

@@ -12,5 +12,10 @@ build/
 .env
 .env.*
 !.env.example
+.mcp.json
 .DS_Store
 node_modules/
+# Screenshots colados via IDE
+image*.png
+image*.jpg
+image*.jpeg
