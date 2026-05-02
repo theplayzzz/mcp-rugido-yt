@@ -19,7 +19,6 @@ from starlette.applications import Starlette
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
-from starlette.routing import Mount, Route
 
 from mcp_rugido_yt.auth import build_authorization_url, exchange_code
 from mcp_rugido_yt.config import get_settings
@@ -33,7 +32,6 @@ logger = logging.getLogger(__name__)
 
 mcp = FastMCP(
     "MCP Rugido YT",
-    streamable_http_path="/",  # serve na raiz do app interno; o mount externo é /mcp
     instructions="MCP multi-tenant pra YouTube Data API, Analytics API e Reporting API.",
 )
 
@@ -169,15 +167,14 @@ def _success_page(
     channel_handle: str | None,
 ) -> HTMLResponse:
     public_url = get_settings().public_base_url.rstrip("/")
-    mcp_url = f"{public_url}/mcp/"
+    mcp_url = f"{public_url}/mcp"
     handle_html = (
         f' (<code>{escape(channel_handle)}</code>)' if channel_handle else ""
     )
 
     cli_command = (
-        f"claude mcp add --transport http rugido-yt \\\n"
-        f"  {mcp_url} \\\n"
-        f'  --header "Authorization: Bearer {session_id}"'
+        f'claude mcp add --transport http rugido-yt {mcp_url} '
+        f'--header "Authorization: Bearer {session_id}"'
     )
 
     desktop_json = (
@@ -192,11 +189,9 @@ def _success_page(
     )
 
     handoff_prompt = (
-        "Adicione o MCP \"rugido-yt\" no meu Claude Code rodando este comando "
-        "exatamente como está:\n\n"
+        f"Roda este comando exatamente como está e depois `claude mcp list`:\n\n"
         f"{cli_command}\n\n"
-        "Depois rode `claude mcp list` pra confirmar que apareceu como "
-        "Connected, e me mostre as ferramentas que ficaram disponíveis."
+        "Confirme que apareceu como Connected e me mostre as tools listadas."
     )
 
     body = f"""<!doctype html>
@@ -281,6 +276,10 @@ def _error_page(msg: str, status: int = 400) -> HTMLResponse:
 
 class BearerAuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
+        # Bearer auth aplica somente ao endpoint MCP, não às rotas auxiliares.
+        if request.url.path != "/mcp":
+            return await call_next(request)
+
         authz = request.headers.get("authorization", "")
         if not authz.lower().startswith("bearer "):
             return JSONResponse(
@@ -339,29 +338,36 @@ class BearerAuthMiddleware(BaseHTTPMiddleware):
 # ---------- App ASGI ----------
 
 
-@asynccontextmanager
-async def lifespan(app: Starlette):
-    init_engine()
-    try:
-        yield
-    finally:
-        await shutdown_engine()
-
-
 def build_app() -> Starlette:
-    mcp_app = mcp.streamable_http_app()
-    mcp_app.add_middleware(BearerAuthMiddleware)
+    """Constrói o app ASGI final.
 
-    return Starlette(
-        debug=False,
-        routes=[
-            Route("/health", health, methods=["GET"]),
-            Route("/oauth/connect", oauth_connect, methods=["GET"]),
-            Route("/oauth/callback", oauth_callback, methods=["GET"]),
-            Mount("/mcp", app=mcp_app),
-        ],
-        lifespan=lifespan,
-    )
+    Estratégia: usa o `mcp.streamable_http_app()` como base (que tem o lifespan
+    do FastMCP, necessário pro task group do session manager). Anexa as rotas
+    auxiliares (/health, /oauth/*) no mesmo app — evita Mount aninhado, que
+    isolaria o lifespan e quebraria o handler MCP.
+    """
+    app = mcp.streamable_http_app()
+
+    app.add_route("/health", health, methods=["GET"])
+    app.add_route("/oauth/connect", oauth_connect, methods=["GET"])
+    app.add_route("/oauth/callback", oauth_callback, methods=["GET"])
+
+    original_lifespan = app.router.lifespan_context
+
+    @asynccontextmanager
+    async def wrapped_lifespan(_app: Starlette):
+        init_engine()
+        try:
+            async with original_lifespan(_app):
+                yield
+        finally:
+            await shutdown_engine()
+
+    app.router.lifespan_context = wrapped_lifespan
+
+    app.add_middleware(BearerAuthMiddleware)
+
+    return app
 
 
 def main():
