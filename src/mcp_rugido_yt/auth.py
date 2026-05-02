@@ -54,14 +54,19 @@ def _client_config() -> dict:
     }
 
 
-def build_authorization_url(state: str) -> str:
+def build_authorization_url(state: str) -> tuple[str, str]:
     """Monta URL pro qual o usuário é redirecionado pra dar consent.
 
     access_type=offline + prompt=consent são essenciais — sem prompt=consent o
     Google não devolve refresh_token na segunda autorização do mesmo usuário.
+
+    Retorna (auth_url, code_verifier). O code_verifier precisa ser persistido
+    entre /oauth/connect e /oauth/callback pro PKCE funcionar (cookie no MCP).
     """
     settings = get_settings()
-    flow = Flow.from_client_config(_client_config(), scopes=SCOPES)
+    flow = Flow.from_client_config(
+        _client_config(), scopes=SCOPES, autogenerate_code_verifier=True
+    )
     flow.redirect_uri = settings.oauth_redirect_uri
     auth_url, _ = flow.authorization_url(
         access_type="offline",
@@ -69,14 +74,16 @@ def build_authorization_url(state: str) -> str:
         include_granted_scopes="true",
         state=state,
     )
-    return auth_url
+    return auth_url, flow.code_verifier
 
 
-def exchange_code(code: str) -> TokenExchangeResult:
+def exchange_code(code: str, *, code_verifier: str | None = None) -> TokenExchangeResult:
     """Troca o code retornado pelo Google por refresh_token + identidade."""
     settings = get_settings()
     flow = Flow.from_client_config(_client_config(), scopes=SCOPES)
     flow.redirect_uri = settings.oauth_redirect_uri
+    if code_verifier:
+        flow.code_verifier = code_verifier
     flow.fetch_token(code=code)
     creds: Credentials = flow.credentials  # type: ignore[assignment]
 

@@ -34,13 +34,17 @@ def _make_session(refresh_token: str = "rt_x") -> SessionData:
 
 
 def test_authorization_url_contains_required_params():
-    url = build_authorization_url(state="abc123")
+    url, code_verifier = build_authorization_url(state="abc123")
     assert "accounts.google.com" in url
     assert "client_id=test-client-id" in url
     assert "access_type=offline" in url
     assert "prompt=consent" in url
     assert "state=abc123" in url
     assert "redirect_uri=https%3A%2F%2Fexample.com%2Foauth%2Fcallback" in url
+    # PKCE: tem que vir com challenge na URL e verifier separado
+    assert "code_challenge=" in url
+    assert "code_challenge_method=S256" in url
+    assert isinstance(code_verifier, str) and len(code_verifier) >= 43
 
 
 def test_credentials_for_session_uses_refresh_token():

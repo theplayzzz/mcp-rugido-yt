@@ -37,6 +37,7 @@ mcp = FastMCP(
 )
 
 OAUTH_STATE_COOKIE = "mcp_rugido_oauth_state"
+OAUTH_PKCE_COOKIE = "mcp_rugido_oauth_pkce"
 
 
 # ---------- Tools de auth/status ----------
@@ -73,16 +74,11 @@ async def health(request: Request) -> Response:
 
 async def oauth_connect(request: Request) -> Response:
     state = secrets.token_urlsafe(32)
-    auth_url = build_authorization_url(state)
+    auth_url, code_verifier = build_authorization_url(state)
     response = RedirectResponse(auth_url, status_code=302)
-    response.set_cookie(
-        OAUTH_STATE_COOKIE,
-        state,
-        max_age=600,
-        httponly=True,
-        secure=True,
-        samesite="lax",
-    )
+    cookie_kwargs = dict(max_age=600, httponly=True, secure=True, samesite="lax")
+    response.set_cookie(OAUTH_STATE_COOKIE, state, **cookie_kwargs)
+    response.set_cookie(OAUTH_PKCE_COOKIE, code_verifier, **cookie_kwargs)
     return response
 
 
@@ -94,14 +90,20 @@ async def oauth_callback(request: Request) -> Response:
     code = request.query_params.get("code")
     state = request.query_params.get("state")
     cookie_state = request.cookies.get(OAUTH_STATE_COOKIE)
+    cookie_verifier = request.cookies.get(OAUTH_PKCE_COOKIE)
 
     if not code or not state:
         return _error_page("Parâmetros ausentes.", status=400)
     if not cookie_state or not secrets.compare_digest(state, cookie_state):
         return _error_page("State mismatch — possível CSRF.", status=400)
+    if not cookie_verifier:
+        return _error_page(
+            "PKCE verifier ausente. Cookies bloqueados? Tente de novo em uma janela limpa.",
+            status=400,
+        )
 
     try:
-        result = exchange_code(code)
+        result = exchange_code(code, code_verifier=cookie_verifier)
     except Exception as e:
         logger.exception("Falha ao trocar code por token")
         return _error_page(f"Falha ao trocar code: {e}", status=500)
