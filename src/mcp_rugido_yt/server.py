@@ -80,6 +80,140 @@ async def health(request: Request) -> Response:
     return JSONResponse({"status": "ok"})
 
 
+async def home(request: Request) -> Response:
+    """Página inicial — explica o que é e linka pro consent."""
+    body = """<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8"><title>MCP Rugido YT</title>
+<style>
+  body{font-family:system-ui,-apple-system,sans-serif;max-width:720px;margin:48px auto;padding:0 16px;line-height:1.6;color:#222}
+  h1{margin-bottom:8px}
+  .lead{color:#555;font-size:18px}
+  a{color:#0a64d1}
+  ul{padding-left:20px}
+  .cta{display:inline-block;background:#0a64d1;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none;margin-top:16px}
+  .cta:hover{background:#084ea3}
+  footer{margin-top:48px;padding-top:16px;border-top:1px solid #eee;color:#666;font-size:13px}
+</style></head><body>
+  <h1>MCP Rugido YT</h1>
+  <p class="lead">Servidor MCP (Model Context Protocol) para análise de canais do YouTube via Claude.</p>
+  <h2>O que faz</h2>
+  <p>Conecta sua conta do YouTube ao Claude Code/Desktop e expõe ferramentas de leitura para:</p>
+  <ul>
+    <li>Métricas Analytics — performance, retenção, audiência, demographics, geografia, receita</li>
+    <li>Listagem de vídeos, canais, playlists e comentários (apenas leitura)</li>
+    <li>Search, trending, sugestões de SEO</li>
+    <li>Transcrições e captions</li>
+    <li>Bulk reporting via Reporting API</li>
+  </ul>
+  <p>O servidor <strong>não publica, não comenta, não modifica</strong> nada na sua conta — somente leitura.</p>
+  <p><a class="cta" href="/oauth/connect">Conectar minha conta do YouTube</a></p>
+  <footer>
+    Operado pelo Grupo Rugido. Uso interno. Veja
+    <a href="/privacy">Política de Privacidade</a> e
+    <a href="/terms">Termos de Uso</a>.
+  </footer>
+</body></html>"""
+    return HTMLResponse(body)
+
+
+async def privacy(request: Request) -> Response:
+    body = """<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8"><title>Política de Privacidade — MCP Rugido YT</title>
+<style>body{font-family:system-ui;max-width:760px;margin:40px auto;padding:0 16px;line-height:1.6;color:#222} h2{margin-top:32px}</style>
+</head><body>
+  <h1>Política de Privacidade — MCP Rugido YT</h1>
+  <p><em>Última atualização: 03 de maio de 2026</em></p>
+
+  <h2>1. Quem somos</h2>
+  <p>O MCP Rugido YT é um servidor operado pelo Grupo Rugido para uso interno e de parceiros, que conecta canais do YouTube ao Claude (Anthropic) via protocolo MCP para análise de métricas.</p>
+
+  <h2>2. Que dados coletamos</h2>
+  <p>Quando você autoriza o app via Google OAuth, recebemos:</p>
+  <ul>
+    <li>Seu endereço de e-mail Google (para identificar a sessão)</li>
+    <li>ID, título e handle do seu canal do YouTube</li>
+    <li>Token de atualização (refresh_token) emitido pelo Google, criptografado em repouso com chave Fernet</li>
+  </ul>
+  <p>Quando você usa as ferramentas via Claude, dados do seu canal (métricas, listagens, transcrições) são acessados em tempo real do Google e devolvidos ao Claude. <strong>Não armazenamos esses dados em nosso banco.</strong></p>
+
+  <h2>3. Como usamos os dados</h2>
+  <ul>
+    <li>O refresh_token é usado exclusivamente para acessar a API do YouTube em seu nome quando você invoca uma ferramenta MCP</li>
+    <li>Não compartilhamos com terceiros</li>
+    <li>Não usamos para publicidade, profiling ou treino de IA</li>
+    <li>Não combinamos com dados de outras fontes</li>
+  </ul>
+
+  <h2>4. Escopos solicitados e por quê</h2>
+  <ul>
+    <li><code>youtube.readonly</code> — listar vídeos, ver metadados do canal, ler comentários e playlists</li>
+    <li><code>yt-analytics.readonly</code> — métricas de performance, audiência, retenção</li>
+    <li><code>yt-analytics-monetary.readonly</code> — relatórios de receita do YouTube Partner Program</li>
+    <li><code>openid</code> + <code>userinfo.email</code> — identificar a sessão pelo e-mail</li>
+  </ul>
+  <p>Não solicitamos escopos de escrita, upload, comentário ou modificação.</p>
+
+  <h2>5. Retenção</h2>
+  <p>Mantemos o refresh_token enquanto sua sessão estiver ativa. Você pode revogar a qualquer momento em <a href="https://myaccount.google.com/permissions" target="_blank">myaccount.google.com/permissions</a>. Após revogação, o token fica inválido e podemos remover o registro a pedido.</p>
+
+  <h2>6. Segurança</h2>
+  <ul>
+    <li>Refresh tokens criptografados em repouso (Fernet/AES-128-CBC + HMAC)</li>
+    <li>HTTPS obrigatório (Let's Encrypt)</li>
+    <li>Sessões protegidas por bearer token opaco</li>
+  </ul>
+
+  <h2>7. Limites de uso conforme Google API Services User Data Policy</h2>
+  <p>O uso de dados do Google pelo MCP Rugido YT respeita a <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank">Google API Services User Data Policy</a>, incluindo os requisitos de Limited Use.</p>
+
+  <h2>8. Contato</h2>
+  <p>Dúvidas ou solicitação de remoção: <a href="mailto:lucas3k@rugido.com">lucas3k@rugido.com</a></p>
+</body></html>"""
+    return HTMLResponse(body)
+
+
+async def terms(request: Request) -> Response:
+    body = """<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8"><title>Termos de Uso — MCP Rugido YT</title>
+<style>body{font-family:system-ui;max-width:760px;margin:40px auto;padding:0 16px;line-height:1.6;color:#222} h2{margin-top:32px}</style>
+</head><body>
+  <h1>Termos de Uso — MCP Rugido YT</h1>
+  <p><em>Última atualização: 03 de maio de 2026</em></p>
+
+  <h2>1. Aceitação</h2>
+  <p>Ao autorizar sua conta do YouTube no MCP Rugido YT, você concorda com estes Termos.</p>
+
+  <h2>2. Uso permitido</h2>
+  <p>O serviço é fornecido para análise de métricas do seu próprio canal do YouTube, exclusivamente para fins legítimos relacionados ao seu negócio ou conteúdo.</p>
+
+  <h2>3. Uso não permitido</h2>
+  <ul>
+    <li>Tentar acessar dados de canais que você não controla</li>
+    <li>Usar para spam, manipulação de métricas ou violação dos Termos do YouTube</li>
+    <li>Engenharia reversa do servidor ou tentativa de extrair tokens de outros usuários</li>
+  </ul>
+
+  <h2>4. Disponibilidade</h2>
+  <p>Servimos "as is", sem garantia de uptime. Quotas da YouTube API podem limitar uso em dias de pico.</p>
+
+  <h2>5. Limitação de responsabilidade</h2>
+  <p>O Grupo Rugido não se responsabiliza por decisões tomadas com base nas análises geradas, falhas de terceiros (Google, Anthropic) ou indisponibilidade do serviço.</p>
+
+  <h2>6. Encerramento</h2>
+  <p>Você pode revogar acesso a qualquer momento em <a href="https://myaccount.google.com/permissions" target="_blank">myaccount.google.com/permissions</a>. Reservamos o direito de suspender sessões que violem estes Termos.</p>
+
+  <h2>7. Alterações</h2>
+  <p>Estes Termos podem ser atualizados. Mudanças significativas serão comunicadas a usuários ativos pelo e-mail registrado.</p>
+
+  <h2>8. Contato</h2>
+  <p><a href="mailto:lucas3k@rugido.com">lucas3k@rugido.com</a></p>
+</body></html>"""
+    return HTMLResponse(body)
+
+
 async def oauth_connect(request: Request) -> Response:
     state = secrets.token_urlsafe(32)
     auth_url, code_verifier = build_authorization_url(state)
@@ -357,6 +491,9 @@ def build_app() -> Starlette:
     """
     app = mcp.streamable_http_app()
 
+    app.add_route("/", home, methods=["GET"])
+    app.add_route("/privacy", privacy, methods=["GET"])
+    app.add_route("/terms", terms, methods=["GET"])
     app.add_route("/health", health, methods=["GET"])
     app.add_route("/oauth/connect", oauth_connect, methods=["GET"])
     app.add_route("/oauth/callback", oauth_callback, methods=["GET"])
