@@ -380,66 +380,11 @@ def youtube_analytics_content_type_breakdown(
     }
 
 
-@mcp.tool()
-def youtube_analytics_revenue(
-    start_date: str | None = None,
-    end_date: str | None = None,
-) -> dict:
-    """Get revenue breakdown.
-
-    Requires the channel to be in the YouTube Partner Program (monetized).
-    Returns estimated revenue, ad revenue, and YouTube Premium revenue.
-
-    Args:
-        start_date: Start date (YYYY-MM-DD). Defaults to 28 days ago.
-        end_date: End date (YYYY-MM-DD). Defaults to today.
-    """
-    try:
-        return _run_analytics_query(
-            metrics="estimatedRevenue,estimatedAdRevenue,grossRevenue,estimatedRedPartnerRevenue",
-            start_date=start_date,
-            end_date=end_date,
-        )
-    except Exception as e:
-        if "Forbidden" in str(e):
-            return {
-                "error": "Revenue data not available. Channel may not be monetized "
-                "(YouTube Partner Program required)."
-            }
-        raise
-
-
-@mcp.tool()
-def youtube_analytics_revenue_by_video(
-    start_date: str | None = None,
-    end_date: str | None = None,
-    max_results: int = 20,
-) -> dict:
-    """Get revenue per video, sorted by highest revenue.
-
-    Requires the channel to be in the YouTube Partner Program.
-
-    Args:
-        start_date: Start date (YYYY-MM-DD). Defaults to 28 days ago.
-        end_date: End date (YYYY-MM-DD). Defaults to today.
-        max_results: Number of videos to return (max 200).
-    """
-    try:
-        return _run_analytics_query(
-            metrics="estimatedRevenue,estimatedAdRevenue,grossRevenue",
-            dimensions="video",
-            sort="-estimatedRevenue",
-            max_results=min(max_results, 200),
-            start_date=start_date,
-            end_date=end_date,
-        )
-    except Exception as e:
-        if "Forbidden" in str(e):
-            return {
-                "error": "Revenue data not available. Channel may not be monetized "
-                "(YouTube Partner Program required)."
-            }
-        raise
+# Revenue tools (youtube_analytics_revenue, youtube_analytics_revenue_by_video)
+# foram removidas: dependiam do escopo `yt-analytics-monetary.readonly` que é
+# o escopo sensitive mais protegido pelo Google e estava bloqueando contas no
+# OAuth consent. Pra reativar: re-incluir o escopo em auth.py:SCOPES, no Console
+# Google e submeter pra Verificação Google.
 
 
 @mcp.tool()

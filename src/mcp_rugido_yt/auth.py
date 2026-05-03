@@ -23,21 +23,19 @@ SCOPES = [
     "https://www.googleapis.com/auth/youtube.readonly",
     # Analytics — métricas de performance, audience, retention, traffic sources.
     "https://www.googleapis.com/auth/yt-analytics.readonly",
-    # Analytics monetary — revenue por video, ad performance.
-    "https://www.googleapis.com/auth/yt-analytics-monetary.readonly",
     # Identidade do usuário pra resolver o canal e gravar email na sessão.
     "openid",
     "https://www.googleapis.com/auth/userinfo.email",
 ]
-# NOTA: escopos `youtube` (write) e `youtube.upload` foram removidos porque são
-# "restricted" — bloqueiam o consent quando o app não passou pela Verificação
-# Google + Security Assessment (US$ 4-15k). Ferramentas que dependiam deles:
-#   - publishing.py    (upload_video, update_video, set_thumbnail, delete_video)
-#   - comments.py      (post_comment, reply_to_comment) — leitura segue ok
-#   - playlists.py     (create, add, remove) — listagem segue ok
-# Essas tools continuam no código mas vão retornar 403 quando chamadas. Pra
-# habilitar: passar pela Verificação Google (semanas/meses) e re-incluir os
-# escopos aqui.
+# NOTA sobre escopos removidos pra evitar bloqueio do consent Google:
+#   - `youtube` + `youtube.upload` (restricted): exigem Verificação + Security
+#     Assessment (US$ 4-15k). Tools afetadas em publishing.py, comments write,
+#     playlists write — também removidas das listagens MCP.
+#   - `yt-analytics-monetary.readonly` (sensitive mais protegido): bloqueava
+#     contas com flag de risco mesmo após Publish em Production. Tools
+#     afetadas: youtube_analytics_revenue e youtube_analytics_revenue_by_video.
+# Pra reativar qualquer um, re-incluir aqui + no consent screen do Console e
+# submeter Verificação Google.
 
 GOOGLE_TOKEN_URI = "https://oauth2.googleapis.com/token"
 

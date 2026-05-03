@@ -2,9 +2,9 @@
 
 MCP server multi-tenant para YouTube Data API v3, Analytics API e Reporting API. Cada usuário se conecta com seu próprio canal via OAuth Google e recebe um `session_id` (`ymp_xxx`) que cola no Authorization header do cliente MCP.
 
-**30 tools** focadas em **read + analytics**: dados de canal/vídeo, todas as métricas Analytics (performance, audiência, retenção, receita, demographics, geography), search/SEO, transcripts, listagem de playlists e comentários, bulk reporting.
+**28 tools** focadas em **read + analytics não-monetária**: dados de canal/vídeo, métricas Analytics (performance, audiência, retenção, demographics, geography), search/SEO, transcripts, listagem de playlists e comentários, bulk reporting.
 
-Tools de write (upload, post_comment, create_playlist, etc) foram removidas: dependem de escopos `restricted` que exigem Verificação Google + Security Assessment.
+Tools de write (upload, post_comment, create_playlist, etc) e tools de receita (revenue) foram removidas: dependem de escopos `restricted` ou `sensitive monetary` que exigem Verificação Google + Security Assessment.
 
 ## Modelo de uso
 
@@ -52,7 +52,7 @@ uv venv && uv pip install -e ".[dev]"
 .venv/bin/pytest
 ```
 
-## Tools expostas (30 tools — read + analytics)
+## Tools expostas (28 tools — read + analytics não-monetária)
 
 ### Auth/Status (1)
 - `youtube_auth_status` — canal vinculado, escopos, quota usada
@@ -66,11 +66,11 @@ uv venv && uv pip install -e ".[dev]"
 ### Transcripts (2)
 - `youtube_get_transcript`, `youtube_list_captions`
 
-### Analytics (13)
+### Analytics (11)
 - `youtube_analytics_overview`, `youtube_analytics_top_videos`, `youtube_analytics_top_shorts`, `youtube_analytics_video_detail`
 - `youtube_analytics_traffic_sources`, `youtube_analytics_demographics`, `youtube_analytics_geography`
 - `youtube_analytics_daily`, `youtube_analytics_day_of_week`, `youtube_analytics_content_type_breakdown`
-- `youtube_analytics_revenue`, `youtube_analytics_revenue_by_video`, `youtube_analytics_retention`
+- `youtube_analytics_retention`
 
 ### Playlists (1)
 - `youtube_list_playlists`
@@ -89,9 +89,10 @@ Production sem Verificação. Pra reativar: passar pela Verificação Google
 também Security Assessment de US$ 4-15k), e re-adicionar `youtube` e
 `youtube.upload` em `auth.py:SCOPES`.
 
-- Publishing: `youtube_upload_video`, `youtube_update_video`, `youtube_set_thumbnail`, `youtube_delete_video`
-- Comments write: `youtube_post_comment`, `youtube_reply_to_comment`
-- Playlists write: `youtube_create_playlist`, `youtube_add_to_playlist`, `youtube_remove_from_playlist`
+- Publishing (restricted): `youtube_upload_video`, `youtube_update_video`, `youtube_set_thumbnail`, `youtube_delete_video`
+- Comments write (restricted): `youtube_post_comment`, `youtube_reply_to_comment`
+- Playlists write (restricted): `youtube_create_playlist`, `youtube_add_to_playlist`, `youtube_remove_from_playlist`
+- Revenue (sensitive monetary): `youtube_analytics_revenue`, `youtube_analytics_revenue_by_video`
 
 ## Quota
 

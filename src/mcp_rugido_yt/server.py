@@ -156,7 +156,6 @@ async def privacy(request: Request) -> Response:
   <ul>
     <li><code>youtube.readonly</code> — listar vídeos, ver metadados do canal, ler comentários e playlists</li>
     <li><code>yt-analytics.readonly</code> — métricas de performance, audiência, retenção</li>
-    <li><code>yt-analytics-monetary.readonly</code> — relatórios de receita do YouTube Partner Program</li>
     <li><code>openid</code> + <code>userinfo.email</code> — identificar a sessão pelo e-mail</li>
   </ul>
   <p>Não solicitamos escopos de escrita, upload, comentário ou modificação.</p>
