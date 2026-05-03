@@ -46,6 +46,13 @@ class Settings(BaseSettings):
     youtube_api_key: str | None = Field(default=None, alias="YOUTUBE_API_KEY")
     daily_quota_limit: int = Field(default=10_000, alias="DAILY_QUOTA_LIMIT")
 
+    # Google Site Verification — token do meta tag (sem o "google-site-verification=").
+    # Setar quando for verificar propriedade do domínio no Search Console
+    # via HTML meta tag method.
+    google_site_verification: str | None = Field(
+        default=None, alias="GOOGLE_SITE_VERIFICATION"
+    )
+
     @property
     def oauth_redirect_uri(self) -> str:
         return f"{self.public_base_url.rstrip('/')}/oauth/callback"

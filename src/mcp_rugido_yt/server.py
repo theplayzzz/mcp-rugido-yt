@@ -82,18 +82,24 @@ async def health(request: Request) -> Response:
 
 async def home(request: Request) -> Response:
     """Página inicial — explica o que é e linka pro consent."""
-    body = """<!doctype html>
+    verif_token = get_settings().google_site_verification
+    verif_meta = (
+        f'<meta name="google-site-verification" content="{escape(verif_token)}">\n'
+        if verif_token
+        else ""
+    )
+    body = f"""<!doctype html>
 <html lang="pt-BR"><head>
-<meta charset="utf-8"><title>MCP Rugido YT</title>
+{verif_meta}<meta charset="utf-8"><title>MCP Rugido YT</title>
 <style>
-  body{font-family:system-ui,-apple-system,sans-serif;max-width:720px;margin:48px auto;padding:0 16px;line-height:1.6;color:#222}
-  h1{margin-bottom:8px}
-  .lead{color:#555;font-size:18px}
-  a{color:#0a64d1}
-  ul{padding-left:20px}
-  .cta{display:inline-block;background:#0a64d1;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none;margin-top:16px}
-  .cta:hover{background:#084ea3}
-  footer{margin-top:48px;padding-top:16px;border-top:1px solid #eee;color:#666;font-size:13px}
+  body{{font-family:system-ui,-apple-system,sans-serif;max-width:720px;margin:48px auto;padding:0 16px;line-height:1.6;color:#222}}
+  h1{{margin-bottom:8px}}
+  .lead{{color:#555;font-size:18px}}
+  a{{color:#0a64d1}}
+  ul{{padding-left:20px}}
+  .cta{{display:inline-block;background:#0a64d1;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none;margin-top:16px}}
+  .cta:hover{{background:#084ea3}}
+  footer{{margin-top:48px;padding-top:16px;border-top:1px solid #eee;color:#666;font-size:13px}}
 </style></head><body>
   <h1>MCP Rugido YT</h1>
   <p class="lead">Servidor MCP (Model Context Protocol) para análise de canais do YouTube via Claude.</p>
